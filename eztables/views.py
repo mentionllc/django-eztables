@@ -98,10 +98,17 @@ class DatatablesView(MultipleObjectMixin, View):
                 search = reduce(or_, criterions)
                 queryset = queryset.filter(search)
             else:
-                for term in search.split():
-                    criterions = (Q(**{'%s__icontains' % field: term}) for field in self.get_db_fields())
-                    search = reduce(or_, criterions)
-                    queryset = queryset.filter(search)
+                ors = []
+                for comma_split in search.split(','):
+                    ands = []
+                    for term in comma_split.split():
+                        criterions = (Q(**{'%s__icontains' % field: term}) for field in db_fields)
+                        single_term = reduce(Q.__or__, criterions)
+                        ands.append(single_term)
+                    search = reduce(Q.__and__, ands)
+                    ors.append(search)
+                search = reduce(Q.__or__, ors)
+                queryset = queryset.filter(search)
         return queryset
 
     def column_search(self, queryset):
