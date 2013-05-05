@@ -102,7 +102,7 @@ class DatatablesView(MultipleObjectMixin, View):
                 for comma_split in search.split(','):
                     ands = []
                     for term in comma_split.split():
-                        criterions = (Q(**{'%s__icontains' % field: term}) for field in db_fields)
+                        criterions = (Q(**{'%s__icontains' % field: term}) for field in self.get_db_fields())
                         single_term = reduce(Q.__or__, criterions)
                         ands.append(single_term)
                     search = reduce(Q.__and__, ands)
